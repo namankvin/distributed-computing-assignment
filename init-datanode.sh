@@ -19,12 +19,13 @@ echo "🗑️  Cleaning DataNode directory: $DATANODE_DIR"
 echo "====================================================="
 
 # Check if the DataNode directory exists
-if [ -d "$DATANODE_DIR" ]; then
-    rm -rf "$DATANODE_DIR"/*
-    echo "✅ DataNode directory cleaned successfully."
-else
+# Ensure the DataNode storage directory exists.
+# Existing HDFS block data is preserved across container restarts.
+if [ ! -d "$DATANODE_DIR" ]; then
     echo "📁 DataNode directory does not exist. Creating..."
     mkdir -p "$DATANODE_DIR"
+else
+    echo "✅ Existing DataNode directory found. Preserving stored HDFS blocks."
 fi
 
 # Set correct ownership and permissions
