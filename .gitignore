@@ -4,6 +4,8 @@
 # Generated matrix data
 format_a/
 format_b/
+output_milestone6/
+hadoop_libs/
 
 # Hadoop persistent/runtime data
 namenode/
@@ -13,6 +15,8 @@ datanode2/
 # Compiled C++ executable
 generate_matrix
 generate_matrix.exe
+verify_transpose
+verify_transpose.exe
 
 # Java compilation/build output
 *.class

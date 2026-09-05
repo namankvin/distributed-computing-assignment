@@ -1,6 +1,6 @@
 # Matrix Transpose using Hadoop MapReduce
 
-This repository contains the Docker/Hadoop environment and all work required up to **Milestone 5** of the Matrix Transpose using Hadoop MapReduce assignment.
+This repository contains the Docker/Hadoop environment and all work required up to **Milestone 6** of the Matrix Transpose using Hadoop MapReduce assignment.
 
 This README is written for a teammate starting from a fresh **Windows 10/11** machine.
 
@@ -20,7 +20,9 @@ After completing the steps below, you will have:
 - Format B generated as 64 block files
 - Both formats uploaded to HDFS
 - HDFS storage usage verified
-- Environment ready for **Milestone 6**
+- MapReduce matrix transpose job implemented and compiled
+- Sequential verification program compiled and executed
+- Milestone 6 verified successfully
 
 ---
 
@@ -38,6 +40,11 @@ hadoop-cluster/
 │
 ├── generate_matrix.cpp     # Milestone 5 matrix generator
 ├── input.txt               # Previous WordCount input
+│
+├── MatrixTranspose.java    # Milestone 6 MapReduce transpose program
+├── verify_transpose.cpp    # Milestone 6 sequential verification program
+├── build_jar.sh            # Milestone 6 compilation script
+├── run_milestone6.sh       # Milestone 6 automated runner
 │
 ├── .gitignore
 ├── .gitattributes
@@ -1452,3 +1459,133 @@ Before starting Milestone 6, confirm:
 ```
 
 If all checks pass, begin implementing the Hadoop MapReduce matrix transpose for **Milestone 6**.
+
+---
+
+# 44. Compile the MapReduce Transpose Code
+
+From the repository root in Ubuntu:
+
+```bash
+./build_jar.sh
+```
+
+This compiles `MatrixTranspose.java` using Hadoop client libraries and creates:
+
+```text
+MatrixTranspose.jar
+```
+
+---
+
+# 45. Compile the Sequential Verification Program
+
+Run:
+
+```bash
+g++ -std=c++17 -O2 verify_transpose.cpp -o verify_transpose
+```
+
+Verify the executable exists:
+
+```bash
+ls
+```
+
+You should see:
+
+```text
+verify_transpose
+```
+
+---
+
+# 46. Run the MapReduce Matrix Transpose Job
+
+Ensure YARN ResourceManager and NodeManagers are running.
+
+Copy the JAR file into the NameNode container:
+
+```bash
+docker cp MatrixTranspose.jar namenode:/tmp/MatrixTranspose.jar
+```
+
+Remove any previous output directory in HDFS:
+
+```bash
+docker exec namenode hdfs dfs -rm -r -f /matrix_data/output_milestone6
+```
+
+Submit the MapReduce job from the NameNode:
+
+```bash
+docker exec namenode hadoop jar /tmp/MatrixTranspose.jar MatrixTranspose /matrix_data/format_b /matrix_data/output_milestone6
+```
+
+---
+
+# 47. Retrieve MapReduce Output from HDFS
+
+Remove any local output directory:
+
+```bash
+rm -rf output_milestone6
+```
+
+Fetch the transposed block files from HDFS to the NameNode container `/tmp`:
+
+```bash
+docker exec namenode hdfs dfs -get /matrix_data/output_milestone6 /tmp/output_milestone6
+```
+
+Copy the output files to your local machine:
+
+```bash
+docker cp namenode:/tmp/output_milestone6 ./output_milestone6
+```
+
+---
+
+# 48. Verify MapReduce Output Correctness
+
+Run the sequential verification program against the output directory:
+
+```bash
+./verify_transpose ./output_milestone6
+```
+
+Expected output:
+
+```text
+Blocks verified   : 16
+Elements verified : 1048576
+Mismatches        : 0
+Result            : SUCCESS
+```
+
+---
+
+# 49. Run Automated Milestone 6 Execution
+
+Alternatively, execute all steps for Milestone 6 automatically using:
+
+```bash
+./run_milestone6.sh
+```
+
+This script checks dependencies, compiles sources, starts YARN, submits the MapReduce job, fetches output, and verifies correctness.
+
+---
+
+# 50. Milestone 6 Complete
+
+At this point:
+
+```text
+MapReduce Transpose Job Written        ✓
+MatrixTranspose.jar Built              ✓
+Sequential Verification Built          ✓
+MapReduce Transpose Executed on YARN   ✓
+HDFS Output Retrieved                  ✓
+Sequential Verification Passed (0 errors) ✓
+```
